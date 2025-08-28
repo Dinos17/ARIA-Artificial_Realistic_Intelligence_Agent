@@ -34,17 +34,20 @@ async def main():
             # Retrieve context (short-term + long-term)
             context = memory.get_context(top_k=5, filter_personal=True)
 
-            # Query LLM
+            # Query LLM with [REDACTED] instead of real name
             response = await llm.acomplete(
                 user_input,
                 chat_history=context["chat_history"],
-                user_name="[REDACTED]",  # Never send actual username
+                user_name="[REDACTED]",
                 summary=context["summary"]
             )
-            print(f"ARIA: {response}\n")
+
+            # Replace placeholder with actual name for display
+            final_response = response.replace("[REDACTED]", memory.user_name)
+            print(f"ARIA: {final_response}\n")
 
             # Update memories
-            memory.update(user_input, response)
+            memory.update(user_input, final_response)
             memory.update_summary(" ".join([msg["content"] for msg in memory.chat_history[-20:]]))
 
         except KeyboardInterrupt:
